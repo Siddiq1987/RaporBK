@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Rapor BK - SMP Islam Terpadu Tri Sukses</title>
+    <link rel="icon" href="https://pngup.com/EnhF/SMP IT TRI SUKSES (400px).png" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Times+New+Roman:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel Import/Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Chart.js for Dashboard Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .print-container { box-sizing: border-box; }
+
+        @media print {
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box !important;
+            }
+
+            html, body {
+                width: 210mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body {
+                display: block !important;
+                min-height: auto !important;
+            }
+
+            header,
+            .no-print {
+                display: none !important;
+            }
+
+            main {
+                display: block !important;
+                width: 210mm !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #view-print {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #raporPreviewContainer {
+                display: block !important;
+                width: 210mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .print-container {
+                box-sizing: border-box !important;
+                display: block !important;
+                position: relative !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                min-height: 297mm !important;
+                max-height: 297mm !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 8mm !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                overflow: hidden !important;
+                page-break-before: always !important;
+                page-break-after: always !important;
+                break-before: page !important;
+                break-after: page !important;
+            }
+
+            .print-container:first-child {
+                page-break-before: auto !important;
+                break-before: auto !important;
+            }
+
+            .print-container:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+
+            table {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            img {
+                max-height: 96px;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+        }
+        .font-serif-custom {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt !important;
+            color: #000000 !important;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-blue-50/40 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <header class="no-print bg-blue-900 text-white shadow-xl sticky top-0 z-50 border-b border-blue-800">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <img src="https://pngup.com/EnhF/SMP IT TRI SUKSES (400px).png" alt="Icon" class="w-20 h-20 object-contain">
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-tight">Rapor Bimbingan Konseling<br>SMP Islam Terpadu Tri Sukses</h1>
+                    <h3 class="text-base sm:text-lg font-semibold text-blue-100">By Ash Siddiq ST</h3>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-1.5 sm:space-x-2 flex-wrap">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-blue-600 text-white shadow-md transition flex items-center">
+                    <i class="fa-solid fa-chart-pie mr-1.5"></i> Dashboard & Siswa
+                </button>
+                <button onclick="switchTab('print')" id="btn-print" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-blue-100 hover:bg-blue-800 transition flex items-center">
+                    <i class="fa-solid fa-print mr-1.5"></i> Cetak Rapor
+                </button>
+                <button onclick="switchTab('instrument')" id="btn-instrument" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-blue-100 hover:bg-blue-800 transition flex items-center">
+                    <i class="fa-solid fa-sliders mr-1.5"></i> Instrumen BK
+                </button>
+                <button onclick="switchTab('settings')" id="btn-settings" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-blue-100 hover:bg-blue-800 transition flex items-center">
+                    <i class="fa-solid fa-gear mr-1.5"></i> Pengaturan Sekolah
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+
+        <div id="view-dashboard" class="space-y-6">
+            <!-- Professional Header Card -->
+            <div class="bg-gradient-to-r from-blue-900 to-blue-700 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="space-y-1">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Rapor Bimbingan Konseling</h2>
+                    <h3 class="text-base sm:text-lg font-semibold text-blue-100">SMP Islam Terpadu Tri Sukses</h3>
+                </div>
+                <div class="bg-blue-800/80 px-4 py-3 rounded-xl border border-blue-600/50 flex items-center space-x-3">
+                    <div class="p-2.5 bg-blue-600 rounded-lg text-white"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div>
+                        <p class="text-[12px] uppercase font-bold text-blue-300">Sistem BK Aktif</p>
+                        <p class="text-xs font-semibold text-white">Kurikulum Merdeka / 4 Skala Predikat</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-blue-100 flex flex-col justify-between space-y-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Total Peserta Didik</p>
+                            <h3 id="statTotalSiswa" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+                        </div>
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl text-xl">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs text-blue-700 font-semibold bg-blue-50 px-2.5 py-1 rounded-lg w-fit">
+                        <i class="fa-solid fa-circle-check"></i> <span>Sinkron otomatis localStorage</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-blue-100 flex flex-col justify-between space-y-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Kelas Aktif</p>
+                            <h3 id="statTotalKelas" class="text-3xl font-extrabold text-slate-900 mt-1">4</h3>
+                        </div>
+                        <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl text-xl">
+                            <i class="fa-solid fa-school"></i>
+                        </div>
+                    </div>
+                    <p id="statKelasList" class="text-xs text-slate-500 font-medium"><b>VII-A, VIII-A, IX-A</b></p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-blue-100 flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Distribusi Predikat BK</p>
+                        <span class="text-xs text-blue-700 font-bold">Evaluasi</span>
+                    </div>
+                    <div class="h-24 flex items-center justify-center">
+                        <canvas id="predikatChart" class="max-h-24"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Table Section -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-blue-100 space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Daftar Peserta Didik & Penilaian BK</h2>
+                        <p class="text-xs text-slate-500">Kelola data siswa, isi instrumen perkembangan aspek Pribadi, Sosial, Belajar, dan Karir</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5">
+                        <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md shadow-blue-100 transition flex items-center">
+                            <i class="fa-solid fa-user-plus mr-1.5"></i> Tambah Siswa
+                        </button>
+                        <label class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md shadow-sky-100 transition cursor-pointer flex items-center" title="Import Data Siswa (Kolom: Nama Siswa, Kelas, NIS/NISN)">
+                            <i class="fa-solid fa-file-excel mr-1.5"></i> Import Excel Siswa
+                            <input type="file" id="excelStudentFile" accept=".xlsx, .xls" class="hidden" onchange="importStudentExcel(event)">
+                        </label>
+                        <button onclick="exportStudentTemplate()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5"></i> Template Excel Siswa
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" oninput="renderStudentTable()" placeholder="Cari nama siswa atau NIS / NISN..." class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                    </div>
+                    <div class="sm:w-52">
+                        <select id="filterKelas" onchange="renderStudentTable()" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                            <option value="">Semua Kelas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-blue-50 text-blue-900 text-[12px] uppercase tracking-wider border-b border-slate-200 font-bold">
+                                <th class="p-3.5">No</th>
+                                <th class="p-3.5">Nama Peserta Didik</th>
+                                <th class="p-3.5">NIS / NISN</th>
+                                <th class="p-3.5">Kelas</th>
+                                <th class="p-3.5 text-center">Status Aspek BK</th>
+                                <th class="p-3.5 text-center">Aksi Cepat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm font-medium">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-print" class="hidden space-y-6">
+            <div class="no-print bg-white rounded-2xl shadow-sm p-4 border border-blue-100 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center space-x-3 flex-1 min-w-[280px]">
+                    <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Pilih Siswa Rapor:</label>
+                    <select id="selectPrintStudent" onchange="updatePrintPreview()" class="px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 bg-slate-50 font-semibold">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="printSingleStudent()" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-sky-100 transition flex items-center">
+                        <i class="fa-solid fa-print mr-2"></i> Cetak Rapor Ini
+                    </button>
+                    <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-blue-100 transition flex items-center">
+                        <i class="fa-solid fa-file-pdf mr-2"></i> Cetak Semua / PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- RAPOR PAGES CONTAINER -->
+            <div id="raporPreviewContainer" class="flex flex-col items-center space-y-4">
+                
+                <!-- PAGE 1: HEADER & PERSONAL/SOCIAL -->
+                <div class="print-container bg-white w-full max-w-[210mm] min-h-[297mm] p-[10mm] shadow-2xl rounded-2xl font-serif-custom text-black relative border border-slate-100" style="font-size: 12pt !important;">
+                    
+                    <!-- Exact Header with Logos & 14pt Titles Between Logos -->
+                    <div class="flex justify-between items-center pb-2 mb-3">
+                        <div class="w-24 h-24 flex-shrink-0 flex items-center justify-center">
+                            <img src="https://pngup.com/EnhF/SMP IT TRI SUKSES (400px).png" alt="Logo Sekolah" class="w-24 h-24 object-contain" onerror="this.src='https://placehold.co/96x96/1d4ed8/ffffff?text=LOGO'">
+                        </div>
+                        <div class="text-center flex-1 px-4">
+                            <h3 style="font-size: 15pt !important;" class="font-bold tracking-wide text-black uppercase">LAPORAN PERKEMBANGAN PESERTA DIDIK</h3>
+                            <h2 style="font-size: 15pt !important;" class="font-bold uppercase mt-1 tracking-wide text-black">SMP ISLAM TERPADU TRI SUKSES</h2>
+                            <p style="font-size: 15pt !important;" id="print-kop-ta" class="mt-1 text-black font-bold">TAHUN AJARAN 2026/2027</p>
+                        </div>
+                        <div class="w-24 h-24 flex-shrink-0 flex items-center justify-center">
+                            <img src="https://pngup.com/kDCy/TWH.png" alt="Logo Tut Wuri" class="w-24 h-24 object-contain" onerror="this.src='https://placehold.co/96x96/0284c7/ffffff?text=TWH'">
+                        </div>
+                    </div>
+                    <div class="border-b-2 border-black mb-1"></div>
+                    <div class="border-b-4 border-black mb-5"></div>
+
+                    <!-- Biodata Grid (Bold Labels & Values) -->
+                    <table class="w-full text-[12pt] mb-1 font-serif-custom text-black">
+                        <tr>
+                            <td class="py-1 font-bold w-48 text-black">Nama Peserta Didik</td>
+                            <td class="py-1 font-bold">: <span id="r-nama" class="font-bold text-black"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 font-bold text-black">NIS / NISN</td>
+                            <td class="py-1 font-bold">: <span id="r-nis" class="font-bold text-black"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 font-bold text-black">Kelas</td>
+                            <td class="py-1 font-bold">: <span id="r-kelas" class="font-bold text-black"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 font-bold text-black">Semester</td>
+                            <td class="py-1 font-bold">: <span id="r-semester" class="font-bold text-black">2 (Dua)</span></td>
+                        </tr>
+                    </table>
+
+                    <!-- Table 4-Column Ringkasan Perkembangan Sesuai Gambar Referensi -->
+                    <div class="mb-6 font-serif-custom text-black">
+                        <table class="w-full border-collapse border border-black text-center text-[12pt]">
+                            <thead>
+                                <tr class="bg-slate-200">
+                                    <th colspan="4" class="border border-black py-1 font-bold text-black text-[12pt]">
+                                        📊 Ringkasan Perkembangan Saya
+                                    </th>
+                                </tr>
+                                <tr class="bg-white">
+                                    <th class="border border-black py-1 w-1/4 font-bold text-blue-700 text-[12pt]">
+                                        🌟<br>Aspek Pribadi
+                                    </th>
+                                    <th class="border border-black py-1 w-1/4 font-bold text-blue-700 text-[12pt]">
+                                        🤝<br>Aspek Sosial
+                                    </th>
+                                    <th class="border border-black py-1 w-1/4 font-bold text-blue-700 text-[12pt]">
+                                        📚<br>Aspek Belajar
+                                    </th>
+                                    <th class="border border-black py-1 w-1/4 font-bold text-blue-700 text-[12pt]">
+                                        🎯<br>Aspek Karir
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-[12pt] text-black">
+                                    <td class="border border-black py-1 font-bold text-black" id="r-asp-pribadi">Baik</td>
+                                    <td class="border border-black py-1 font-bold text-black" id="r-asp-sosial">Baik</td>
+                                    <td class="border border-black py-1 font-bold text-black" id="r-asp-belajar">Cukup</td>
+                                    <td class="border border-black py-1 font-bold text-black" id="r-asp-karir">Baik</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabel 1: Pribadi (Unified Single Table Structure) -->
+                    <div class="mb-5 font-serif-custom text-black">
+                        <table class="w-full text-[12pt] border-collapse border border-black">
+                            <thead>
+                                <tr class="bg-slate-200">
+                                    <th colspan="3" class="border border-black py-1 text-center font-bold text-[12pt] text-black uppercase">
+                                        🌟 PERKEMBANGAN PRIBADI SAYA
+                                    </th>
+                                </tr>
+                                <tr class="bg-slate-200 font-serif-custom text-black">
+                                    <th class="border border-black p-1 w-2/5 text-center font-bold text-[12pt] text-black">Indikator</th>
+                                    <th class="border border-black p-1 w-20 text-center font-bold text-[12pt] text-black">Predikat</th>
+                                    <th class="border border-black p-1 text-center font-bold text-[12pt] text-black">Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-pribadi-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabel 2: Sosial (Unified Single Table Structure) -->
+                    <div class="mb-4 font-serif-custom text-black">
+                        <table class="w-full text-[12pt] border-collapse border border-black">
+                            <thead>
+                                <tr class="bg-slate-300">
+                                    <th colspan="3" class="border border-black py-1 text-center font-bold text-[12pt] text-black uppercase">
+                                        🤝 KEMAMPUAN SOSIAL SAYA
+                                    </th>
+                                </tr>
+                                <tr class="bg-slate-300 font-serif-custom text-black">
+                                    <th class="border border-black p-1 w-2/5 text-center font-bold text-[12pt] text-black">Indikator</th>
+                                    <th class="border border-black p-1 w-20 text-center font-bold text-[12pt] text-black">Predikat</th>
+                                    <th class="border border-black p-1 text-center font-bold text-[12pt] text-black">Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-sosial-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: LEARNING, CAREER, MESSAGE & SIGNATURES -->
+                <div class="print-container bg-white w-full max-w-[210mm] min-h-[297mm] p-[10mm] shadow-2xl rounded-2xl font-serif-custom text-black relative border border-slate-100" style="font-size: 12pt !important;">
+                    
+                    <!-- Tabel 3: Belajar (Unified Single Table Structure) -->
+                    <div class="mb-5 font-serif-custom text-black">
+                        <table class="w-full text-[12pt] border-collapse border border-black">
+                            <thead>
+                                <tr class="bg-slate-200">
+                                    <th colspan="3" class="border border-black py-1 text-center font-bold text-[12pt] text-black uppercase">
+                                        📚 KEMAMPUAN BELAJAR SAYA
+                                    </th>
+                                </tr>
+                                <tr class="bg-slate-200 font-serif-custom text-black">
+                                    <th class="border border-black p-1 w-2/5 text-center font-bold text-[12pt] text-black">Indikator</th>
+                                    <th class="border border-black p-1 w-20 text-center font-bold text-[12pt] text-black">Predikat</th>
+                                    <th class="border border-black p-1 text-center font-bold text-[12pt] text-black">Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-belajar-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tabel 4: Karir / Masa Depan (Unified Single Table Structure) -->
+                    <div class="mb-5 font-serif-custom text-black">
+                        <table class="w-full text-[12pt] border-collapse border border-black">
+                            <thead>
+                                <tr class="bg-slate-200">
+                                    <th colspan="3" class="border border-black py-1 text-center font-bold text-[12pt] text-black uppercase">
+                                        🎯 PERENCANAAN MASA DEPAN SAYA
+                                    </th>
+                                </tr>
+                                <tr class="bg-slate-200 font-serif-custom text-black">
+                                    <th class="border border-black p-1 w-2/5 text-center font-bold text-[12pt] text-black">Indikator</th>
+                                    <th class="border border-black p-1 w-20 text-center font-bold text-[12pt] text-black">Predikat</th>
+                                    <th class="border border-black p-1 text-center font-bold text-[12pt] text-black">Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-karir-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pesan dari Guru BK (Solid Black Bordered Table) -->
+                    <div class="mb-6 font-serif-custom text-black">
+                        <table class="w-full border-collapse border border-black text-[12pt]">
+                            <thead>
+                                <tr class="bg-slate-200">
+                                    <th class="border border-black py-1 px-3 font-bold text-black text-center text-[12pt]">
+                                        💌 PESAN DARI GURU BK
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-black p-1 text-black leading-relaxed text-[12pt]" id="r-pesan">
+                                        Siswa menunjukkan sikap dan perkembangan yang positif dalam kegiatan belajar. Terus dipertahankan dan ditingkatkan secara konsisten
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Tanda Tangan Sesuai Template Referensi -->
+                    <div class="text-[12pt] pt-2 font-serif-custom text-black">
+                        <table class="w-full border-collapse">
+                            <tr>
+                                <td class="w-1/2 align-top pb-12 text-center">
+                                    <span class="font-bold text-[12pt] text-black"></span><br>
+                                    <span class="font-bold text-[12pt] text-black">Guru Bimbingan Konseling</span>
+                                </td>
+                                <td class="w-1/2 align-top pb-12 text-center">
+                                    <span class="font-bold text-[12pt] text-black" id="r-kota-tgl">Depok, 24 Juni 2026</span><br>
+                                    <span class="font-bold text-[12pt] text-black">Wali Kelas <span id="r-wk-kelas">VII-1</span></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-1/2 align-top pb-12 text-center">
+                                    <span class="font-bold text-black text-[12pt]" id="r-guru-bk">Sabita Azizah, S.Psi</span>
+                                </td>
+                                <td class="w-1/2 align-top pb-12 text-center">
+                                    <span class="font-bold text-black text-[12pt]" id="r-wali-kelas">Aiman Nurhadi, S.Or</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="text-center pt-2">
+                                    <span class="font-bold text-[12pt] text-black">Mengetahui,</span><br>
+                                    <span class="font-bold text-[12pt] text-black" id="r-jabatan-ks">Kepala SMP Islam Terpadu Tri Sukses</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="text-center pt-14">
+                                    <span class="font-bold text-black text-[12pt]" id="r-nama-ks">Moch Ash Siddiq Sayyidul Tarmizi, S.T</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="view-instrument" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-blue-100 space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Pengaturan Instrumen Aspek & Indikator BK (4 Skala Predikat)</h2>
+                        <p class="text-sm text-slate-500">Isian deskripsi otomatis berdasarkan pilihan Sangat Baik, Baik, Cukup, atau Perlu Perbaikan</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="resetInstrumentsToDefault()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold transition">
+                            <i class="fa-solid fa-rotate-right mr-1.5"></i> Reset Default
+                        </button>
+                        <button onclick="saveInstruments()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-md shadow-blue-100 transition">
+                            <i class="fa-solid fa-save mr-1.5"></i> Simpan Instrumen
+                        </button>
+                    </div>
+                </div>
+
+                <div id="instrumentContainer" class="space-y-6">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div id="view-settings" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-blue-100 space-y-6 max-w-4xl mx-auto">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Pengaturan Identitas Sekolah</h2>
+                    <p class="text-xs text-slate-500">Informasi nama sekolah terkunci, tahun ajaran, pejabat, dan daftar wali kelas per kelas</p>
+                </div>
+
+                <form id="settingsForm" onsubmit="saveSettings(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Sekolah (Terkunci)</label>
+                            <input type="text" id="settingSekolah" value="SMP ISLAM TERPADU TRI SUKSES" disabled class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm bg-slate-100 text-slate-500 font-bold cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tahun Ajaran</label>
+                            <input type="text" id="settingTA" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50 font-semibold" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Kota Tempat Penerbitan</label>
+                            <input type="text" id="settingKota" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tanggal Rapor</label>
+                            <input type="text" id="settingTanggal" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Guru BK</label>
+                            <input type="text" id="settingGuruBK" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Kepala Sekolah</label>
+                            <input type="text" id="settingKS" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50" required>
+                        </div>
+                    </div>
+
+                    <!-- Kelas & Wali Kelas Mapping Table -->
+                    <div class="border-t border-slate-200 pt-5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-sm text-slate-900">Daftar Kelas & Wali Kelas</h3>
+                                <p class="text-xs text-slate-500">Tentukan nama wali kelas untuk masing-masing rombongan belajar</p>
+                            </div>
+                            <button type="button" onclick="addClassRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition">
+                                <i class="fa-solid fa-plus mr-1"></i> Tambah Kelas
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                            <table class="w-full text-left border-collapse">
+                               <thead>
+                                   <tr class="bg-blue-50 text-blue-900 text-[11px] uppercase tracking-wider border-b border-slate-200 font-bold">
+                                       <th class="p-3">Nama Kelas</th>
+                                       <th class="p-3">Nama Wali Kelas</th>
+                                       <th class="p-3 text-center w-20">Aksi</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="settingsClassesBody" class="divide-y divide-slate-100 text-xs">
+                                   <!-- Populated dynamically -->
+                               </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-end">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-blue-100 transition">
+                            Simpan Pengaturan Sekolah
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="studentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden border border-slate-100">
+            <div class="px-6 py-4 bg-blue-900 text-white flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="p-2 bg-blue-600 rounded-lg text-sm"><i class="fa-solid fa-user-pen"></i></div>
+                    <h3 id="modalTitle" class="font-bold text-base">Tambah Data Siswa & Penilaian</h3>
+                </div>
+                <button onclick="closeModal()" class="text-blue-200 hover:text-white p-1 rounded-lg hover:bg-blue-800 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6 flex-1">
+                <form id="studentForm" onsubmit="saveStudent(event)" class="space-y-6">
+                    <input type="hidden" id="formIndex" value="-1">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nama Lengkap Siswa</label>
+                            <input type="text" id="inputNama" required placeholder="Contoh: Aaryan Raharial" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">NIS / NISN</label>
+                            <input type="text" id="inputNis" required placeholder="Contoh: 252607001/013764" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Kelas</label>
+                            <select id="inputKelas" onchange="onModalKelasChange()" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Semester</label>
+                            <input type="text" id="inputSemester" value="2 (Dua)" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Wali Kelas (Otomatis)</label>
+                            <input type="text" id="inputWali" readonly class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm bg-slate-100 text-slate-700 font-semibold cursor-not-allowed">
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-blue-950 flex items-center">
+                                <i class="fa-solid fa-list-check mr-2 text-blue-600"></i> Penilaian Indikator Aspek BK (Auto Deskripsi)
+                            </h4>
+                            <button type="button" onclick="autoFillDefaultScores()" class="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-semibold transition">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Isi Cepat Default (Baik)
+                            </button>
+                        </div>
+                        <div id="formIndicatorsContainer" class="space-y-4">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-4">
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">💌 Pesan dari Guru BK</label>
+                        <textarea id="inputPesan" rows="3" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50/50">Siswa menunjukkan sikap dan perkembangan yang positif dalam kegiatan belajar. Terus dipertahankan dan ditingkatkan secara konsisten</textarea>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+                        <button type="button" onclick="closeModal()" class="px-5 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">Batal</button>
+                        <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-blue-100 transition">Simpan Data Siswa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let schoolClasses = JSON.parse(localStorage.getItem('bk_classes')) || [
+            { kelas: "VII-A", wali: "Aiman Nurhadi, S.Or" },
+            { kelas: "VIII-A", wali: "Budi Santoso, M.Pd" },
+            { kelas: "IX-A", wali: "Dewi Lestari, S.Pd" }
+        ];
+
+        let schoolSettings = JSON.parse(localStorage.getItem('bk_settings')) || {
+            sekolah: "SMP ISLAM TERPADU TRI SUKSES",
+            ta: "2026/2027",
+            kota: "Depok",
+            tanggal: "24 Juni 2026",
+            guruBK: "Sabita Azizah, S.Psi",
+            kepalaSekolah: "Moch Ash Siddiq Sayyidul Tarmizi, S.T"
+        };
+
+        // Exact Instrument Data from instrumen.docx with 4 Predicate Levels
+        let defaultInstruments = [
+            {
+                category: "pribadi",
+                title: "🌟 PERKEMBANGAN PRIBADI SAYA",
+                indicators: [
+                    { 
+                        name: "💪 Kedisiplinan dan Tanggung Jawab", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Selalu hadir tepat waktu, mengerjakan tugas dengan baik, dan bertanggung jawab penuh terhadap kewajiban sebagai siswa",
+                            "Baik": "Umumnya disiplin dalam kehadiran dan mengerjakan tugas, sesekali perlu diingatkan",
+                            "Cukup": "Cukup disiplin namun masih perlu bimbingan dalam menjalankan tanggung jawab",
+                            "Perlu Perbaikan": "Sering terlambat, kurang konsisten dalam mengerjakan tugas, perlu pendampingan intensif"
+                        }
+                    },
+                    { 
+                        name: "✨ Kepercayaan Diri", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Berani tampil di depan kelas, percaya diri dalam menyampaikan pendapat, dan tidak mudah minder",
+                            "Baik": "Cukup percaya diri dalam situasi familiar, kadang masih ragu dalam situasi baru",
+                            "Cukup": "Kepercayaan diri masih terbatas, perlu dorongan untuk berani mengekspresikan diri",
+                            "Perlu Perbaikan": "Sangat pemalu, sulit mengekspresikan diri, perlu bimbingan khusus untuk membangun kepercayaan diri"
+                        }
+                    },
+                    { 
+                        name: "😌 Kemampuan Mengelola Emosi", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Mampu mengendalikan emosi dengan baik, tidak mudah marah atau sedih berlebihan, dapat menenangkan diri",
+                            "Baik": "Umumnya dapat mengelola emosi, sesekali masih terbawa perasaan",
+                            "Cukup": "Kadang kesulitan mengontrol emosi, perlu belajar teknik pengelolaan emosi",
+                            "Perlu Perbaikan": "Sering meledak-ledak atau terlalu sensitif, perlu bimbingan intensif dalam mengelola emosi"
+                        }
+                    }
+                ]
+            },
+            {
+                category: "sosial",
+                title: "🤝 KEMAMPUAN SOSIAL SAYA",
+                indicators: [
+                    { 
+                        name: "💬 Kemampuan Berkomunikasi", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Berkomunikasi dengan jelas dan sopan, mendengarkan dengan baik, dapat menyampaikan ide secara efektif",
+                            "Baik": "Komunikasi cukup baik, kadang perlu meningkatkan kejelasan dalam menyampaikan pesan",
+                            "Cukup": "Kemampuan komunikasi terbatas, perlu latihan berbicara di depan umum",
+                            "Perlu Perbaikan": "Sulit berkomunikasi, sangat pendiam atau sebaliknya terlalu dominan, perlu bimbingan komunikasi"
+                        }
+                    },
+                    { 
+                        name: "🤜🤛 Kerjasama dan Toleransi", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Aktif dalam kerja kelompok, menghargai perbedaan pendapat, dapat berkompromi dengan baik",
+                            "Baik": "Cukup kooperatif dalam tim, kadang perlu didorong untuk lebih aktif berpartisipasi",
+                            "Cukup": "Masih belajar bekerja sama, kadang sulit menerima pendapat orang lain",
+                            "Perlu Perbaikan": "Sulit bekerja dalam tim, cenderung individualis atau konflik dengan teman, perlu bimbingan sosial"
+                        }
+                    },
+                    { 
+                        name: "❤️ Empati dan Kepedulian", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Sangat peduli terhadap perasaan teman, suka menolong, dapat memahami situasi orang lain",
+                            "Baik": "Cukup empati, kadang perlu diingatkan untuk lebih peka terhadap kebutuhan orang lain",
+                            "Cukup": "Empati masih terbatas, perlu belajar memahami perasaan dan kebutuhan orang lain",
+                            "Perlu Perbaikan": "Kurang peduli terhadap orang lain, fokus pada diri sendiri, perlu pengembangan empati"
+                        }
+                    }
+                ]
+            },
+            {
+                category: "belajar",
+                title: "📚 KEMAMPUAN BELAJAR SAYA",
+                indicators: [
+                    { 
+                        name: "🔥 Motivasi Belajar", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Sangat antusias belajar, aktif bertanya, mengerjakan tugas tanpa disuruh, selalu ingin tahu lebih banyak",
+                            "Baik": "Motivasi belajar cukup baik, kadang perlu dorongan untuk lebih aktif",
+                            "Cukup": "Motivasi belajar naik turun, perlu stimulus eksternal untuk tetap semangat",
+                            "Perlu Perbaikan": "Kurang termotivasi belajar, sering malas mengerjakan tugas, perlu pendampingan khusus"
+                        }
+                    },
+                    { 
+                        name: "🎯 Kemandirian Belajar", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Belajar tanpa disuruh, mengatur waktu belajar sendiri, mencari sumber belajar tambahan",
+                            "Baik": "Cukup mandiri dalam belajar, kadang masih perlu pengawasan",
+                            "Cukup": "Kemandirian belajar masih berkembang, perlu bimbingan dalam mengatur waktu dan metode belajar",
+                            "Perlu Perbaikan": "Sangat bergantung pada orang lain, tidak bisa belajar sendiri, perlu pendampingan intensif"
+                        }
+                    },
+                    { 
+                        name: "🧩 Mengatasi Kesulitan Belajar", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Aktif mencari solusi ketika menghadapi kesulitan, bertanya pada guru/teman, mencoba berbagai cara",
+                            "Baik": "Cukup berusaha mengatasi kesulitan, kadang perlu bantuan dalam mencari solusi",
+                            "Cukup": "Masih belajar cara mengatasi kesulitan, perlu bimbingan strategi belajar",
+                            "Perlu Perbaikan": "Mudah menyerah ketika menghadapi kesulitan, perlu dukungan dan bimbingan intensif"
+                        }
+                    }
+                ]
+            },
+            {
+                category: "karir",
+                title: "🎯 PERENCANAAN MASA DEPAN SAYA",
+                indicators: [
+                    { 
+                        name: "🔍 Pemahaman Diri (Minat & Bakat)", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Sangat memahami minat dan bakatnya, aktif mengembangkan potensi diri, tahu kelebihan dan kekurangan",
+                            "Baik": "Cukup mengenal diri sendiri, kadang masih perlu eksplorasi lebih dalam",
+                            "Cukup": "Pemahaman diri masih terbatas, perlu bimbingan untuk mengenali minat dan bakat",
+                            "Perlu Perbaikan": "Belum mengenal minat dan bakatnya, perlu asesmen dan bimbingan khusus"
+                        }
+                    },
+                    { 
+                        name: "🗺️ Perencanaan Masa Depan", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Memiliki rencana jelas untuk masa depan, tahu langkah-langkah yang harus diambil, punya target yang realistis",
+                            "Baik": "Punya gambaran masa depan, kadang masih perlu bantuan menyusun rencana konkret",
+                            "Cukup": "Rencana masa depan masih samar, perlu bimbingan dalam menyusun tujuan hidup",
+                            "Perlu Perbaikan": "Belum punya gambaran masa depan, perlu eksplorasi karir dan bimbingan perencanaan"
+                        }
+                    },
+                    { 
+                        name: "⚖️ Pengambilan Keputusan", 
+                        defaultPred: "Baik", 
+                        descriptions: {
+                            "Sangat Baik": "Dapat membuat keputusan dengan pertimbangan matang, berani mengambil risiko yang terukur",
+                            "Baik": "Cukup baik dalam mengambil keputusan, kadang masih ragu-ragu",
+                            "Cukup": "Kemampuan mengambil keputusan masih berkembang, perlu bimbingan dalam menimbang pilihan",
+                            "Perlu Perbaikan": "Sulit mengambil keputusan, sangat bergantung pada orang lain, perlu latihan pengambilan keputusan"
+                        }
+                    }
+                ]
+            }
+        ];
+
+        let instruments = JSON.parse(localStorage.getItem('bk_instruments')) || defaultInstruments;
+
+        let students = JSON.parse(localStorage.getItem('bk_students')) || [
+            {
+                nama: "Aaryan Raharial Muchtar",
+                nis: "252607001/0137648726",
+                kelas: "VII-1",
+                semester: "2 (Dua)",
+                waliKelas: "Aiman Nurhadi, S.Or",
+                pesan: "Siswa menunjukkan sikap dan perkembangan yang positif dalam kegiatan belajar. Terus dipertahankan dan ditingkatkan secara konsisten",
+                scores: {
+                    "Kedisiplinan dan Tanggung Jawab": { pred: "Baik", desc: "Umumnya disiplin dalam kehadiran dan mengerjakan tugas, sesekali perlu diingatkan" },
+                    "Kepercayaan Diri": { pred: "Cukup", desc: "Kepercayaan diri masih terbatas, perlu dorongan untuk berani mengekspresikan diri" },
+                    "Kemampuan Mengelola Emosi": { pred: "Baik", desc: "Umumnya dapat mengelola emosi, sesekali masih terbawa perasaan" },
+                    "Kemampuan Berkomunikasi": { pred: "Cukup", desc: "Kemampuan komunikasi terbatas, perlu latihan berbicara di depan umum" },
+                    "Kerjasama dan Toleransi": { pred: "Baik", desc: "Cukup kooperatif dalam tim, kadang perlu didorong untuk lebih aktif berpartisipasi" },
+                    "Empati dan Kepedulian": { pred: "Baik", desc: "Cukup empati, kadang perlu diingatkan untuk lebih peka terhadap kebutuhan orang lain" },
+                    "Motivasi Belajar": { pred: "Cukup", desc: "Motivasi belajar naik turun, perlu stimulus eksternal untuk tetap semangat" },
+                    "Kemandirian Belajar": { pred: "Cukup", desc: "Kemandirian belajar masih berkembang, perlu bimbingan dalam mengatur waktu dan metode belajar" },
+                    "Mengatasi Kesulitan Belajar": { pred: "Cukup", desc: "Masih belajar cara mengatasi kesulitan, perlu bimbingan strategi belajar" },
+                    "Pemahaman Diri (Minat & Bakat)": { pred: "Baik", desc: "Cukup mengenal diri sendiri, kadang masih perlu eksplorasi lebih dalam" },
+                    "Perencanaan Masa Depan": { pred: "Baik", desc: "Punya gambaran masa depan, kadang masih perlu bantuan menyusun rencana konkret" },
+                    "Pengambilan Keputusan": { pred: "Baik", desc: "Cukup baik dalam mengambil keputusan, kadang masih ragu-ragu" }
+                }
+            }
+        ];
+
+        let chartInstance = null;
+
+        function switchTab(tabId) {
+            ['dashboard', 'print', 'instrument', 'settings'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`btn-${t}`).className = "px-2 py-2 rounded-xl text-xs sm:text-sm font-semibold text-blue-100 hover:bg-blue-800 transition flex items-center";
+            });
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).className = "px-2 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-blue-600 text-white shadow-md transition flex items-center";
+
+            if (tabId === 'print') {
+                populatePrintDropdown();
+            } else if (tabId === 'instrument') {
+                renderInstrumentEditor();
+            } else if (tabId === 'settings') {
+                loadSettingsForm();
+            } else if (tabId === 'dashboard') {
+                renderStudentTable();
+                renderAnalyticsChart();
+            }
+        }
+
+        function populateClassDropdowns() {
+            const filterSelect = document.getElementById('filterKelas');
+            const currentFilter = filterSelect.value;
+            filterSelect.innerHTML = '<option value="">Semua Kelas</option>';
+            schoolClasses.forEach(c => {
+                filterSelect.innerHTML += `<option value="${c.kelas}" ${c.kelas === currentFilter ? 'selected' : ''}>${c.kelas}</option>`;
+            });
+
+            document.getElementById('statTotalKelas').innerText = schoolClasses.length;
+            document.getElementById('statKelasList').innerText = schoolClasses.map(c => c.kelas).join(', ');
+        }
+
+        function renderStudentTable() {
+            populateClassDropdowns();
+            const tbody = document.getElementById('studentTableBody');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filterKelas = document.getElementById('filterKelas').value;
+
+            tbody.innerHTML = '';
+            
+            const filtered = students.filter(s => {
+                const matchSearch = s.nama.toLowerCase().includes(search) || s.nis.toLowerCase().includes(search);
+                const matchKelas = filterKelas === "" || s.kelas === filterKelas;
+                return matchSearch && matchKelas;
+            });
+
+            document.getElementById('statTotalSiswa').innerText = students.length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-medium">Tidak ada data peserta didik ditemukan.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((s) => {
+                const idx = students.indexOf(s);
+                const row = document.createElement('tr');
+                row.className = "hover:bg-blue-50/40 transition border-b border-slate-100";
+                row.innerHTML = `
+                    <td class="p-3.5 text-slate-500">${idx + 1}</td>
+                    <td class="p-3.5 font-bold text-slate-900">${s.nama}</td>
+                    <td class="p-3.5 text-slate-600 font-mono text-xs">${s.nis}</td>
+                    <td class="p-3.5"><span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold border border-blue-100">${s.kelas}</span></td>
+                    <td class="p-3.5 text-center">
+                        <span class="px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-lg text-xs font-semibold">Lengkap (12 Indikator)</span>
+                    </td>
+                    <td class="p-3.5 text-center space-x-1">
+                        <button onclick="previewStudent(${idx})" title="Preview & Cetak Rapor" class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition shadow-sm"><i class="fa-solid fa-eye"></i></button>
+                        <button onclick="openModal('edit', ${idx})" title="Edit Siswa & Nilai" class="p-2 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-xl transition shadow-sm"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteStudent(${idx})" title="Hapus Siswa" class="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl transition shadow-sm"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            renderAnalyticsChart();
+        }
+
+        function renderAnalyticsChart() {
+            const ctx = document.getElementById('predikatChart').getContext('2d');
+            let countSB = 0, countB = 0, countC = 0, countPP = 0;
+            students.forEach(s => {
+                if (s.scores) {
+                    Object.values(s.scores).forEach(sc => {
+                        if (sc.pred === 'Sangat Baik') countSB++;
+                        else if (sc.pred === 'Baik') countB++;
+                        else if (sc.pred === 'Cukup') countC++;
+                        else countPP++;
+                    });
+                }
+            });
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sangat Baik', 'Baik', 'Cukup', 'Perlu Perbaikan'],
+                    datasets: [{
+                        data: [countSB, countB, countC, countPP],
+                        backgroundColor: ['#2563eb', '#3b82f6', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        function openModal(mode, idx = -1) {
+            document.getElementById('studentModal').classList.remove('hidden');
+            const kelasSelect = document.getElementById('inputKelas');
+            kelasSelect.innerHTML = '';
+            schoolClasses.forEach(c => {
+                kelasSelect.innerHTML += `<option value="${c.kelas}">${c.kelas}</option>`;
+            });
+
+            const container = document.getElementById('formIndicatorsContainer');
+            container.innerHTML = '';
+
+            if (mode === 'add') {
+                document.getElementById('modalTitle').innerText = "Tambah Data Siswa & Penilaian";
+                document.getElementById('formIndex').value = -1;
+                document.getElementById('inputNama').value = '';
+                document.getElementById('inputNis').value = '';
+                if (schoolClasses.length > 0) kelasSelect.value = schoolClasses[0].kelas;
+                document.getElementById('inputSemester').value = "2 (Dua)";
+                document.getElementById('inputPesan').value = "Siswa menunjukkan sikap dan perkembangan yang positif dalam kegiatan belajar. Terus dipertahankan dan ditingkatkan secara konsisten";
+                updateModalWali();
+
+                instruments.forEach(cat => {
+                    const block = document.createElement('div');
+                    block.className = "bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3";
+                    block.innerHTML = `<h5 class="font-bold text-xs uppercase text-blue-950 tracking-wider">${cat.title}</h5>`;
+                    
+                    cat.indicators.forEach((ind, iIdx) => {
+                        const uniqueId = `${cat.category}_${iIdx}`;
+                        const defPred = ind.defaultPred || "Baik";
+                        const descMap = ind.descriptions || {};
+                        const defDesc = descMap[defPred] || "Menunjukkan perkembangan dalam aspek ini.";
+                        
+                        block.innerHTML += `
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center pt-2 border-t border-slate-200/60">
+                                <div class="md:col-span-4 text-xs font-semibold text-slate-700">${ind.name}</div>
+                                <div class="md:col-span-3">
+                                    <select id="pred_${uniqueId}" name="pred_${ind.name}" onchange="onPredikatChange('${uniqueId}', ${JSON.stringify(descMap).replace(/"/g, '&quot;')})" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-semibold text-blue-800">
+                                        <option value="Sangat Baik" ${defPred === 'Sangat Baik' ? 'selected' : ''}>Sangat Baik</option>
+                                        <option value="Baik" ${defPred === 'Baik' ? 'selected' : ''}>Baik</option>
+                                        <option value="Cukup" ${defPred === 'Cukup' ? 'selected' : ''}>Cukup</option>
+                                        <option value="Perlu Perbaikan" ${defPred === 'Perlu Perbaikan' ? 'selected' : ''}>Perlu Perbaikan</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-5">
+                                    <input type="text" id="desc_${uniqueId}" name="desc_${ind.name}" value="${defDesc}" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white text-slate-700">
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.appendChild(block);
+                });
+            } else {
+                document.getElementById('modalTitle').innerText = "Edit Data Siswa & Penilaian";
+                document.getElementById('formIndex').value = idx;
+                const s = students[idx];
+                document.getElementById('inputNama').value = s.nama;
+                document.getElementById('inputNis').value = s.nis;
+                kelasSelect.value = s.kelas;
+                document.getElementById('inputSemester').value = s.semester || "2 (Dua)";
+                document.getElementById('inputPesan').value = s.pesan;
+                updateModalWali();
+
+                instruments.forEach(cat => {
+                    const block = document.createElement('div');
+                    block.className = "bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3";
+                    block.innerHTML = `<h5 class="font-bold text-xs uppercase text-blue-950 tracking-wider">${cat.title}</h5>`;
+                    
+                    cat.indicators.forEach((ind, iIdx) => {
+                        const uniqueId = `${cat.category}_${iIdx}`;
+                        const val = s.scores && s.scores[ind.name] ? s.scores[ind.name] : { pred: ind.defaultPred || "Baik", desc: "" };
+                        const descMap = ind.descriptions || {};
+                        if (!val.desc && descMap[val.pred]) val.desc = descMap[val.pred];
+                        
+                        block.innerHTML += `
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center pt-2 border-t border-slate-200/60">
+                                <div class="md:col-span-4 text-xs font-semibold text-slate-700">${ind.name}</div>
+                                <div class="md:col-span-3">
+                                    <select id="pred_${uniqueId}" name="pred_${ind.name}" onchange="onPredikatChange('${uniqueId}', ${JSON.stringify(descMap).replace(/"/g, '&quot;')})" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white font-semibold text-blue-800">
+                                        <option value="Sangat Baik" ${val.pred === 'Sangat Baik' ? 'selected' : ''}>Sangat Baik</option>
+                                        <option value="Baik" ${val.pred === 'Baik' ? 'selected' : ''}>Baik</option>
+                                        <option value="Cukup" ${val.pred === 'Cukup' ? 'selected' : ''}>Cukup</option>
+                                        <option value="Perlu Perbaikan" ${val.pred === 'Perlu Perbaikan' ? 'selected' : ''}>Perlu Perbaikan</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-5">
+                                    <input type="text" id="desc_${uniqueId}" name="desc_${ind.name}" value="${val.desc}" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white text-slate-700">
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.appendChild(block);
+                });
+            }
+        }
+
+        function onModalKelasChange() {
+            updateModalWali();
+        }
+
+        function updateModalWali() {
+            const selectedKelas = document.getElementById('inputKelas').value;
+            const found = schoolClasses.find(c => c.kelas === selectedKelas);
+            document.getElementById('inputWali').value = found ? found.wali : "-";
+        }
+
+        function onPredikatChange(uniqueId, descriptions) {
+            const predSelect = document.getElementById(`pred_${uniqueId}`);
+            const descInput = document.getElementById(`desc_${uniqueId}`);
+            if (predSelect && descInput && descriptions) {
+                const selectedPred = predSelect.value;
+                if (descriptions[selectedPred]) {
+                    descInput.value = descriptions[selectedPred];
+                }
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('studentModal').classList.add('hidden');
+        }
+
+        function autoFillDefaultScores() {
+            instruments.forEach(cat => {
+                cat.indicators.forEach((ind, iIdx) => {
+                    const uniqueId = `${cat.category}_${iIdx}`;
+                    const sel = document.getElementById(`pred_${uniqueId}`);
+                    const inp = document.getElementById(`desc_${uniqueId}`);
+                    if (sel) sel.value = "Baik";
+                    if (inp && ind.descriptions && ind.descriptions["Baik"]) {
+                        inp.value = ind.descriptions["Baik"];
+                    }
+                });
+            });
+        }
+
+        function saveStudent(e) {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('formIndex').value);
+            const nama = document.getElementById('inputNama').value;
+            const nis = document.getElementById('inputNis').value;
+            const kelas = document.getElementById('inputKelas').value;
+            const semester = document.getElementById('inputSemester').value;
+            const waliKelas = document.getElementById('inputWali').value;
+            const pesan = document.getElementById('inputPesan').value;
+
+            const scores = {};
+            instruments.forEach(cat => {
+                cat.indicators.forEach((ind, iIdx) => {
+                    const uniqueId = `${cat.category}_${iIdx}`;
+                    const pred = document.getElementById(`pred_${uniqueId}`).value;
+                    const desc = document.getElementById(`desc_${uniqueId}`).value;
+                    scores[ind.name] = { pred, desc };
+                });
+            });
+
+            const studentData = { nama, nis, kelas, semester, waliKelas, pesan, scores };
+
+            if (idx === -1) {
+                students.push(studentData);
+            } else {
+                students[idx] = studentData;
+            }
+
+            localStorage.setItem('bk_students', JSON.stringify(students));
+            closeModal();
+            renderStudentTable();
+        }
+
+        function deleteStudent(idx) {
+            if (confirm("Apakah Anda yakin ingin menghapus data peserta didik ini?")) {
+                students.splice(idx, 1);
+                localStorage.setItem('bk_students', JSON.stringify(students));
+                renderStudentTable();
+            }
+        }
+
+        function previewStudent(idx) {
+            switchTab('print');
+            document.getElementById('selectPrintStudent').value = idx;
+            updatePrintPreview();
+        }
+
+        function populatePrintDropdown() {
+            const select = document.getElementById('selectPrintStudent');
+            select.innerHTML = '';
+            students.forEach((s, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = `${s.nama} (${s.kelas} - ${s.nis})`;
+                select.appendChild(opt);
+            });
+            if (students.length > 0) {
+                updatePrintPreview();
+            }
+        }
+
+        function updatePrintPreview() {
+            const idx = document.getElementById('selectPrintStudent').value;
+            if (idx === "" || !students[idx]) return;
+            const s = students[idx];
+
+            document.getElementById('print-kop-ta').innerText = `TAHUN AJARAN ${schoolSettings.ta}`;
+            document.getElementById('r-kota-tgl').innerText = `${schoolSettings.kota}, ${schoolSettings.tanggal}`;
+            document.getElementById('r-guru-bk').innerText = schoolSettings.guruBK;
+            document.getElementById('r-nama-ks').innerText = schoolSettings.kepalaSekolah;
+
+            document.getElementById('r-nama').innerText = s.nama;
+            document.getElementById('r-nis').innerText = s.nis;
+            document.getElementById('r-kelas').innerText = s.kelas;
+            document.getElementById('r-semester').innerText = s.semester || "2 (Dua)";
+            document.getElementById('r-pesan').innerText = s.pesan;
+            document.getElementById('r-wk-kelas').innerText = s.kelas;
+            
+            const foundClass = schoolClasses.find(c => c.kelas === s.kelas);
+            document.getElementById('r-wali-kelas').innerText = foundClass ? foundClass.wali : (s.waliKelas || "Wali Kelas");
+
+            instruments.forEach(cat => {
+                let catPreds = cat.indicators.map(ind => s.scores && s.scores[ind.name] ? s.scores[ind.name].pred : "Baik");
+                let dominant = "Baik";
+                if (catPreds.filter(p => p === 'Sangat Baik' || p === 'Baik').length >= 2) {
+                    dominant = catPreds.includes('Sangat Baik') ? 'Sangat Baik' : 'Baik';
+                } else if (catPreds.includes('Perlu Perbaikan')) {
+                    dominant = 'Perlu Perbaikan';
+                } else {
+                    dominant = 'Cukup';
+                }
+                document.getElementById(`r-asp-${cat.category}`).innerText = dominant;
+                
+                const tbody = document.getElementById(`table-${cat.category}-body`);
+                tbody.innerHTML = '';
+                cat.indicators.forEach(ind => {
+                    const sc = s.scores && s.scores[ind.name] ? s.scores[ind.name] : { pred: 'Baik', desc: '-' };
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="border border-black p-2 font-bold text-[12pt] text-black w-2/5">${ind.name}</td>
+                            <td class="border border-black p-2 text-center font-bold text-[12pt] text-black w-20">${sc.pred}</td>
+                            <td class="border border-black p-2 text-black text-[12pt] font-normal">${sc.desc}</td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        function printSingleStudent() {
+            window.print();
+        }
+
+        function renderInstrumentEditor() {
+            const container = document.getElementById('instrumentContainer');
+            container.innerHTML = '';
+
+            instruments.forEach((cat, cIdx) => {
+                const block = document.createElement('div');
+                block.className = "bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-4";
+                block.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+                        <h4 class="font-bold text-sm text-blue-950 uppercase tracking-wide">${cat.title}</h4>
+                        <button onclick="addIndicator(${cIdx})" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-xl hover:bg-blue-700 font-semibold shadow-sm transition">
+                            <i class="fa-solid fa-plus mr-1"></i> Tambah Indikator
+                        </button>
+                    </div>
+                    <div class="space-y-4" id="cat-indicators-${cIdx}">
+                    </div>
+                `;
+                const indContainer = block.querySelector(`#cat-indicators-${cIdx}`);
+                cat.indicators.forEach((ind, iIdx) => {
+                    const descMap = ind.descriptions || {};
+                    indContainer.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                                <div class="md:col-span-8">
+                                    <label class="block text-[12px] font-bold text-slate-400 uppercase">Nama Indikator</label>
+                                    <input type="text" value="${ind.name}" onchange="updateInstName(${cIdx}, ${iIdx}, this.value)" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-900">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="block text-[12px] font-bold text-slate-400 uppercase">Predikat Default</label>
+                                    <select onchange="updateInstPred(${cIdx}, ${iIdx}, this.value)" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-blue-800">
+                                        <option value="Sangat Baik" ${ind.defaultPred === 'Sangat Baik' ? 'selected' : ''}>Sangat Baik</option>
+                                        <option value="Baik" ${ind.defaultPred === 'Baik' ? 'selected' : ''}>Baik</option>
+                                        <option value="Cukup" ${ind.defaultPred === 'Cukup' ? 'selected' : ''}>Cukup</option>
+                                        <option value="Perlu Perbaikan" ${ind.defaultPred === 'Perlu Perbaikan' ? 'selected' : ''}>Perlu Perbaikan</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-1 text-center pt-4">
+                                    <button onclick="removeIndicator(${cIdx}, ${iIdx})" class="text-rose-500 hover:text-rose-700 p-2 rounded-lg hover:bg-rose-50 transition" title="Hapus Indikator"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 pt-2 border-t border-slate-100">
+                                <div>
+                                    <label class="block text-[12px] font-bold text-blue-700 uppercase">[Sangat Baik]</label>
+                                    <textarea rows="2" onchange="updateInstDesc(${cIdx}, ${iIdx}, 'Sangat Baik', this.value)" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" style="height:81px">${descMap['Sangat Baik'] || ''}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[12px] font-bold text-sky-700 uppercase">[Baik]</label>
+                                    <textarea rows="2" onchange="updateInstDesc(${cIdx}, ${iIdx}, 'Baik', this.value)" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" style="height:81px">${descMap['Baik'] || ''}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[12px] font-bold text-amber-700 uppercase">[Cukup]</label>
+                                    <textarea rows="2" onchange="updateInstDesc(${cIdx}, ${iIdx}, 'Cukup', this.value)" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" style="height:81px">${descMap['Cukup'] || ''}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[12px] font-bold text-rose-700 uppercase">[Perlu Perbaikan]</label>
+                                    <textarea rows="2" onchange="updateInstDesc(${cIdx}, ${iIdx}, 'Perlu Perbaikan', this.value)" class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" style="height:81px">${descMap['Perlu Perbaikan'] || ''}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.appendChild(block);
+            });
+        }
+
+        function updateInstName(c, i, val) { instruments[c].indicators[i].name = val; }
+        function updateInstPred(c, i, val) { instruments[c].indicators[i].defaultPred = val; }
+        function updateInstDesc(c, i, pred, val) {
+            if (!instruments[c].indicators[i].descriptions) instruments[c].indicators[i].descriptions = {};
+            instruments[c].indicators[i].descriptions[pred] = val;
+        }
+
+        function addIndicator(cIdx) {
+            instruments[cIdx].indicators.push({ 
+                name: "Indikator Baru BK", 
+                defaultPred: "Baik", 
+                descriptions: {
+                    "Sangat Baik": "Sangat baik dalam indikator ini.",
+                    "Baik": "Menunjukkan perkembangan yang baik.",
+                    "Cukup": "Cukup namun perlu bimbingan.",
+                    "Perlu Perbaikan": "Memerlukan pembinaan intensif."
+                }
+            });
+            renderInstrumentEditor();
+        }
+
+        function removeIndicator(cIdx, iIdx) {
+            instruments[cIdx].indicators.splice(iIdx, 1);
+            renderInstrumentEditor();
+        }
+
+        function saveInstruments() {
+            localStorage.setItem('bk_instruments', JSON.stringify(instruments));
+            alert("Pengaturan instrumen BK berhasil disimpan!");
+        }
+
+        function resetInstrumentsToDefault() {
+            if (confirm("Reset instrumen ke pengaturan awal standar?")) {
+                instruments = JSON.parse(JSON.stringify(defaultInstruments));
+                localStorage.setItem('bk_instruments', JSON.stringify(instruments));
+                renderInstrumentEditor();
+            }
+        }
+
+        function loadSettingsForm() {
+            document.getElementById('settingTA').value = schoolSettings.ta;
+            document.getElementById('settingKota').value = schoolSettings.kota;
+            document.getElementById('settingTanggal').value = schoolSettings.tanggal;
+            document.getElementById('settingGuruBK').value = schoolSettings.guruBK;
+            document.getElementById('settingKS').value = schoolSettings.kepalaSekolah;
+            renderSettingsClasses();
+        }
+
+        function renderSettingsClasses() {
+            const tbody = document.getElementById('settingsClassesBody');
+            tbody.innerHTML = '';
+            schoolClasses.forEach((c, idx) => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100">
+                        <td class="p-2.5">
+                            <input type="text" value="${c.kelas}" onchange="updateClassVal(${idx}, 'kelas', this.value)" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 bg-white">
+                        </td>
+                        <td class="p-2.5">
+                            <input type="text" value="${c.wali}" onchange="updateClassVal(${idx}, 'wali', this.value)" class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-700 bg-white">
+                        </td>
+                        <td class="p-2.5 text-center">
+                            <button type="button" onclick="removeClassRow(${idx})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateClassVal(idx, field, val) {
+            schoolClasses[idx][field] = val;
+        }
+
+        function addClassRow() {
+            schoolClasses.push({ kelas: "VII-Baru", wali: "Nama Wali Kelas" });
+            renderSettingsClasses();
+        }
+
+        function removeClassRow(idx) {
+            if (schoolClasses.length <= 1) {
+                alert("Minimal harus ada 1 kelas aktif.");
+                return;
+            }
+            schoolClasses.splice(idx, 1);
+            renderSettingsClasses();
+        }
+
+        function saveSettings(e) {
+            e.preventDefault();
+            schoolSettings = {
+                sekolah: "SMP ISLAM TERPADU TRI SUKSES",
+                ta: document.getElementById('settingTA').value,
+                kota: document.getElementById('settingKota').value,
+                tanggal: document.getElementById('settingTanggal').value,
+                guruBK: document.getElementById('settingGuruBK').value,
+                kepalaSekolah: document.getElementById('settingKS').value
+            };
+            localStorage.setItem('bk_settings', JSON.stringify(schoolSettings));
+            localStorage.setItem('bk_classes', JSON.stringify(schoolClasses));
+            alert("Pengaturan identitas sekolah dan kelas berhasil disimpan!");
+            renderStudentTable();
+        }
+
+        function exportStudentTemplate() {
+            const wb = XLSX.utils.book_new();
+            const wsData = [
+                ["Nama Siswa", "Kelas", "NIS/NISN"],
+                ["Ahmad Fauzan", "VII-1", "252607002/0137648727"],
+                ["Siti Aminah", "VII-2", "252607003/0137648728"]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, "Data Siswa");
+            XLSX.writeFile(wb, "Template_Import_Data_Siswa.xlsx");
+        }
+
+        function importStudentExcel(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                
+                if (rows.length < 2) {
+                    alert("File Excel kosong atau format tidak sesuai.");
+                    return;
+                }
+
+                let addedCount = 0;
+                for (let i = 1; i < rows.length; i++) {
+                    const r = rows[i];
+                    const namaSiswa = r[0] ? String(r[0]).trim() : "";
+                    const kelasSiswa = r[1] ? String(r[1]).trim() : "VII-1";
+                    const nisSiswa = r[2] ? String(r[2]).trim() : "252600000";
+
+                    if (!namaSiswa) continue;
+
+                    const foundClass = schoolClasses.find(c => c.kelas === kelasSiswa);
+                    const waliKelasName = foundClass ? foundClass.wali : "Wali Kelas";
+
+                    const defaultScores = {};
+                    instruments.forEach(cat => {
+                        cat.indicators.forEach(ind => {
+                            const defPred = ind.defaultPred || "Baik";
+                            const defDesc = ind.descriptions ? (ind.descriptions[defPred] || "Menunjukkan perkembangan yang baik.") : "Menunjukkan perkembangan yang baik.";
+                            defaultScores[ind.name] = { pred: defPred, desc: defDesc };
+                        });
+                    });
+
+                    students.push({
+                        nama: namaSiswa,
+                        nis: nisSiswa,
+                        kelas: kelasSiswa,
+                        semester: "2 (Dua)",
+                        waliKelas: waliKelasName,
+                        pesan: "Siswa menunjukkan sikap dan perkembangan yang positif dalam kegiatan belajar. Terus dipertahankan dan ditingkatkan secara konsisten",
+                        scores: defaultScores
+                    });
+                    addedCount++;
+                }
+                localStorage.setItem('bk_students', JSON.stringify(students));
+                renderStudentTable();
+                alert(`Berhasil mengimpor ${addedCount} data peserta didik baru!`);
+                e.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        window.onload = function() {
+            renderStudentTable();
+        };
+    </script>
+</body>
+</html>
